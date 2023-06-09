@@ -1,7 +1,7 @@
 import { IPersonRepository } from '../../person/repositories/IPersonRepositories';
 import { IRelationshipRepository } from '../../relationship/repositories/IRelationshipRepositories';
 
-type CountType = {
+type TCount = {
   [key: string]: number;
 };
 
@@ -18,50 +18,52 @@ class ShowRecommendationsUseCase {
    * @returns 400: CPF informado não possui 11 dígitos numéricos.
    */
   execute(cpf: string) {
-    const friendsCPF: string[] = [];
-    const userExists = this.personRepository.getByCPF(cpf);
+    const recommendedCPFList: string[] = [];
+    const personExists = this.personRepository.getByCPF(cpf);
 
     if (cpf.length !== 11) {
       return { status: 400, data: 'CPF inválido.' };
     }
 
-    if (!userExists) {
+    if (!personExists) {
       return { status: 404, data: 'Usuário não encontrado.' };
     }
 
     const receivedCPFFriends = this.relationshipRepository.findByCPF(cpf);
 
-    const allRelationships = this.relationshipRepository.getAll();
+    const allRelationshipsList = this.relationshipRepository.getAll();
 
     receivedCPFFriends.forEach((friend) => {
       const friendCPF = friend.cpf1 === cpf ? friend.cpf2 : friend.cpf1;
-      const friendsOfFriend = allRelationships.filter((relation) => {
-        return (
+      const friendsOfFriend = allRelationshipsList.filter(
+        (relation) =>
           [relation.cpf1, relation.cpf2].includes(friendCPF) &&
-          ![relation.cpf1, relation.cpf2].includes(cpf)
-        );
-      });
-
+          ![relation.cpf1, relation.cpf2].includes(cpf),
+      );
+      
       friendsOfFriend.forEach((friendOfFriend) => {
         const friendOfFriendCPF =
           friendOfFriend.cpf1 === friendCPF
             ? friendOfFriend.cpf2
             : friendOfFriend.cpf1;
 
-        friendsCPF.push(friendOfFriendCPF);
+        recommendedCPFList.push(friendOfFriendCPF);
       });
     });
 
-    const friendsOccurrence = friendsCPF.reduce((count: CountType, item) => {
-      count[item] = (count[item] || 0) + 1;
-      return count;
-    }, {});
+    const friendsOccurrence = recommendedCPFList.reduce(
+      (count: TCount, item) => {
+        count[item] = (count[item] || 0) + 1;
+        return count;
+      },
+      {},
+    );
 
-    const recommendedFriends = Object.keys(friendsOccurrence).sort(
+    const recommendedFriendsOrdered = Object.keys(friendsOccurrence).sort(
       (a, b) => friendsOccurrence[b] - friendsOccurrence[a],
     );
 
-    return { status: 200, data: recommendedFriends };
+    return { status: 200, data: recommendedFriendsOrdered };
   }
 }
 
