@@ -28,7 +28,11 @@ Siga as etapas abaixo para configurar o projeto em sua máquina:
 Faça o clone do repositório através do comando abaixo ou baixe-o como arquivo ZIP e extraia-o.
 
 ```bash
-$ git clone
+$ git clone https://github.com/lucianaTSoares/test2.0.git
+```
+OU
+```bash
+$ git clone git@github.com:lucianaTSoares/test2.0.git       (nessessita de chave SSH)
 ```
 
 Após a clonagem finalizada, encontre o diretório do projeto através do Explorador de Arquivos ou por um terminal.
